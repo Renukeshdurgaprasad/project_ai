@@ -26,6 +26,7 @@
 ### **step 4**
 - **execute the python file**
 - execute the python file given with name **app.py**
+- while executing don't forgot to replace **your_api_key** with your api key
    ```sh
    python app.py
 - If everything is set up correctly, you should see:
