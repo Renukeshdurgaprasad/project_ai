@@ -7,9 +7,7 @@ import numpy as np
 
 # Initialize Flask App
 app = Flask(__name__)
-
-# Configure Gemini API
-genai.configure(api_key="AIzaSyAuHvTMhABLBFXtALbhE0-HgapP93PGqGg")
+genai.configure(api_key="your_api_key")
 
 # Sample dataset for recommendations
 data = {
