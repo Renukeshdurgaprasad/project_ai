@@ -13,7 +13,7 @@
     ```sh
     venv\Scripts\activate
 ### **step 2**
-    ```sh
+    - ```sh
     pip install flask google-generativeai scikit-learn pandas requests
 - create a python file with Name **app.py**
 ### **step3**
