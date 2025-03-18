@@ -13,8 +13,8 @@
     ```sh
     venv\Scripts\activate
 ### **step 2**
-   ```sh
-   pip install flask google-generativeai scikit-learn pandas requests
+    ```sh
+    pip install flask google-generativeai scikit-learn pandas requests
 - create a python file with Name **app.py**
 ### **step3**
 - create a front end
