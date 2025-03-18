@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Agent</title>
+    <script>
+        async function chat() {
+            let userInput = document.getElementById("chatInput").value;
+            let response = await fetch("/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: userInput })
+            });
+            let data = await response.json();
+            document.getElementById("chatResponse").innerText = data.response;
+        }
+
+        async function recommend() {
+            let interest = document.getElementById("recommendInput").value;
+            let response = await fetch("/recommend", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ interest: interest })
+            });
+            let data = await response.json();
+            document.getElementById("recommendResponse").innerText = data.recommendations.join(", ");
+        }
+
+        async function automate() {
+            let task = document.getElementById("automateInput").value;
+            let response = await fetch("/automate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ task: task })
+            });
+            let data = await response.json();
+            document.getElementById("automateResponse").innerText = data.result;
+        }
+
+        async function searchAI() {
+            let query = document.getElementById("searchInput").value;
+            let response = await fetch("/search", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ query: query })
+            });
+            let data = await response.json();
+            document.getElementById("searchResponse").innerText = data.result;
+        }
+    </script>
+</head>
+<body>
+    <h2>AI Chatbot</h2>
+    <input type="text" id="chatInput" placeholder="Ask something...">
+    <button onclick="chat()">Chat</button>
+    <p id="chatResponse"></p>
+
+    <h2>Recommendation System</h2>
+    <input type="text" id="recommendInput" placeholder="Enter interest...">
+    <button onclick="recommend()">Get Recommendation</button>
+    <p id="recommendResponse"></p>
+
+    <h2>Automation</h2>
+    <input type="text" id="automateInput" placeholder="Enter task...">
+    <button onclick="automate()">Automate</button>
+    <p id="automateResponse"></p>
+
+    <h2>AI Search</h2>
+    <input type="text" id="searchInput" placeholder="Search anything...">
+    <button onclick="searchAI()">Search</button>
+    <p id="searchResponse"></p>
+</body>
+</html>
