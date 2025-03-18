@@ -22,7 +22,7 @@
   ```sh
   mkdir templates
 - create a html file with name **index.html** in that folder.
-### ** step 4 **
+### **step 4**
 - **execute the python file**
 - execute the python file given with name **app.py**
    ```sh
