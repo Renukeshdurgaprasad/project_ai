@@ -3,72 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Agent</title>
+    <title>AI Assistant</title>
     <script>
         async function chat() {
             let userInput = document.getElementById("chatInput").value;
-            let response = await fetch("/chat", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: userInput })
-            });
-            let data = await response.json();
-            document.getElementById("chatResponse").innerText = data.response;
+            if (!userInput.trim()) {
+                alert("Please enter a message!");
+                return;
+            }
+
+            try {
+                let response = await fetch("http://127.0.0.1:5000/chat_multi", {  // Fixed API URL
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: userInput })
+                });
+
+                let data = await response.json();
+                document.getElementById("chatResponse").innerText = data.response;
+                fetchHistory();  // Update history after chat
+            } catch (error) {
+                console.error("Error in chat:", error);
+                alert("Failed to connect to the server. Make sure the backend is running!");
+            }
         }
 
-        async function recommend() {
-            let interest = document.getElementById("recommendInput").value;
-            let response = await fetch("/recommend", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ interest: interest })
-            });
-            let data = await response.json();
-            document.getElementById("recommendResponse").innerText = data.recommendations.join(", ");
-        }
+        async function fetchHistory() {
+            try {
+                let response = await fetch("http://127.0.0.1:5000/history");  // Fixed API URL
+                let data = await response.json();
+                let historyList = document.getElementById("historyList");
+                historyList.innerHTML = "";
 
-        async function automate() {
-            let task = document.getElementById("automateInput").value;
-            let response = await fetch("/automate", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ task: task })
-            });
-            let data = await response.json();
-            document.getElementById("automateResponse").innerText = data.result;
-        }
+                if (data.length === 0) {
+                    historyList.innerHTML = "<li>No history available.</li>";
+                    return;
+                }
 
-        async function searchAI() {
-            let query = document.getElementById("searchInput").value;
-            let response = await fetch("/search", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ query: query })
-            });
-            let data = await response.json();
-            document.getElementById("searchResponse").innerText = data.result;
+                data.forEach(item => {
+                    let li = document.createElement("li");
+                    li.innerText = item.input + " → " + item.response;
+                    historyList.appendChild(li);
+                });
+            } catch (error) {
+                console.error("Error fetching history:", error);
+                alert("Failed to fetch history. Check if the backend is running.");
+            }
         }
     </script>
 </head>
-<body>
+<body onload="fetchHistory()">
     <h2>AI Chatbot</h2>
     <input type="text" id="chatInput" placeholder="Ask something...">
     <button onclick="chat()">Chat</button>
     <p id="chatResponse"></p>
 
-    <h2>Recommendation System</h2>
-    <input type="text" id="recommendInput" placeholder="Enter interest...">
-    <button onclick="recommend()">Get Recommendation</button>
-    <p id="recommendResponse"></p>
-
-    <h2>Automation</h2>
-    <input type="text" id="automateInput" placeholder="Enter task...">
-    <button onclick="automate()">Automate</button>
-    <p id="automateResponse"></p>
-
-    <h2>AI Search</h2>
-    <input type="text" id="searchInput" placeholder="Search anything...">
-    <button onclick="searchAI()">Search</button>
-    <p id="searchResponse"></p>
+    <h2>Chat History</h2>
+    <ul id="historyList"></ul>
 </body>
 </html>

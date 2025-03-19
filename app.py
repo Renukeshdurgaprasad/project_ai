@@ -1,71 +1,123 @@
-
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify
 import google.generativeai as genai
-from sklearn.metrics.pairwise import cosine_similarity
-import pandas as pd
-import numpy as np
+from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS  # Enable frontend connection
+import logging
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
+
 
 # Initialize Flask App
 app = Flask(__name__)
-genai.configure(api_key="your_api_key")
+CORS(app)  # Allow frontend to access backend
 
-# Sample dataset for recommendations
-data = {
-    "name": ["Python Basics", "AI Fundamentals", "Web Development", "Data Science", "Machine Learning"],
-    "category": ["Programming", "AI", "Web", "Data", "AI"]
-}
-df = pd.DataFrame(data)
+# Configure Logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
-# Convert categories to numeric values
-df["category_encoded"] = df["category"].astype("category").cat.codes
-features = df[["category_encoded"]].values
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+# Database Setup (SQLite)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///interactions.db'
+db = SQLAlchemy(app)
 
-# Helper function: Get Gemini API response
+# Database Model
+class Interaction(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_input = db.Column(db.String(500), nullable=False)
+    ai_response = db.Column(db.String(2000), nullable=False)
+
+# Create Database Tables
+with app.app_context():
+    db.create_all()
+
+# AI Agent Classes with Logging
+class GenerationAgent:
+    def process(self, input_data):
+        logging.info(f"Generating response for: {input_data}")
+        return f"Generated hypothesis: {input_data} - AI-enhanced solution"
+
+class ReflectionAgent:
+    def process(self, input_data):
+        logging.info(f"Checking coherence for: {input_data}")
+        return f"Validated response: {input_data} - Relevant to topic"
+
+class RankingAgent:
+    def process(self, input_data):
+        logging.info(f"Ranking response for: {input_data}")
+        return f"Ranked response: {input_data} - Score 9/10"
+
+class EvolutionAgent:
+    def process(self, input_data):
+        logging.info(f"Refining response for: {input_data}")
+        return f"Refined hypothesis: {input_data} - Updated AI approach"
+
+# Supervisor Agent for Multi-Cycle Processing
+class SupervisorAgent:
+    def __init__(self):
+        self.history = {}
+
+    def assign_task(self, agent, input_data):
+        return agent.process(input_data)
+
+    def multi_cycle_processing(self, input_data, cycles=3):
+        result = input_data
+        for _ in range(cycles):
+            result = self.assign_task(EvolutionAgent(), result)
+            result = self.assign_task(ReflectionAgent(), result)
+            result = self.assign_task(RankingAgent(), result)
+        return result
+
+# Gemini AI Function
 def gemini_search(query):
-    model = genai.GenerativeModel("gemini-2.0-flash")
+    model = genai.GenerativeModel("gemini-2.0-flash")  # Use the latest Gemini model
     response = model.generate_content(query)
-    return response.text
+    return response.text if response else "No relevant data found."
 
-# Helper function: Content-based recommendation
-def recommend_courses(user_interest):
-    input_feature = np.array([[df[df["name"] == user_interest]["category_encoded"].values[0]]])
-    similarities = cosine_similarity(input_feature, features)
-    recommended_indices = similarities.argsort()[0][-3:][::-1]
-    return df.iloc[recommended_indices]["name"].tolist()
-
-# Flask Routes
-@app.route("/")
-def home():
-    return render_template("index.html")
-
-@app.route("/chat", methods=["POST"])
-def chatbot():
-    user_message = request.json.get("message")
-    response = gemini_search(f"Answer as a chatbot: {user_message}")
-    return jsonify({"response": response})
-
-@app.route("/recommend", methods=["POST"])
-def recommend():
-    user_interest = request.json.get("interest")
-    recommendations = recommend_courses(user_interest)
-    return jsonify({"recommendations": recommendations})
-
-@app.route("/automate", methods=["POST"])
-def automate():
-    task = request.json.get("task")
-    automation_responses = {
-        "send email": "Email sent successfully!",
-        "set reminder": "Reminder set!",
-        "weather update": "Today's weather is sunny."
+# Recommendation System
+def get_recommendations(query):
+    topic_map = {
+        "AI": ["Machine Learning", "Neural Networks", "Deep Learning"],
+        "Python": ["Flask", "Django", "FastAPI"],
+        "Chatbot": ["NLP", "Conversational AI", "Voice Assistants"],
     }
-    return jsonify({"result": automation_responses.get(task.lower(), "Task not recognized.")})
+    
+    for topic, suggestions in topic_map.items():
+        if topic.lower() in query.lower():
+            return suggestions
+    return ["No recommendations found."]
 
-@app.route("/search", methods=["POST"])
-def search():
-    query = request.json.get("query")
-    result = gemini_search(query)
-    return jsonify({"result": result})
+# Store chat history
+def store_chat(user_input, ai_response):
+    new_interaction = Interaction(user_input=user_input, ai_response=ai_response)
+    db.session.add(new_interaction)
+    db.session.commit()
 
-# Run the App
+# API Routes
+@app.route('/chat_multi', methods=['POST'])
+def chat_multi():
+    data = request.get_json()
+    user_input = data.get("message")
+
+    # Get AI response
+    ai_response = gemini_search(user_input)
+
+    # Get recommended topics
+    recommendations = get_recommendations(user_input)
+
+    # Store interaction in database
+    store_chat(user_input, ai_response)
+
+    return jsonify({
+        "response": ai_response,
+        "recommendations": recommendations
+    })
+
+@app.route("/history", methods=["GET"])
+def get_history():
+    interactions = Interaction.query.all()
+    history = [{"input": i.user_input, "response": i.ai_response} for i in interactions]
+    return jsonify(history)
+
 if __name__ == "__main__":
     app.run(debug=True)
