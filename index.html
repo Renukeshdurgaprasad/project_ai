@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Assistant</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+    <script>
+        async function chat() {
+            let userInput = document.getElementById("chatInput").value;
+            if (!userInput.trim()) {
+                alert("Please enter a message!");
+                return;
+            }
+
+            try {
+                let response = await fetch("http://127.0.0.1:5000/chat_multi", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: userInput }),
+                });
+
+                let data = await response.json();
+                document.getElementById("chatResponse").innerText = data.response;
+                fetchHistory();
+            } catch (error) {
+                console.error("Error in chat:", error);
+                alert("Failed to connect to the server. Make sure the backend is running!");
+            }
+        }
+
+        async function toggleHistory() {
+            let history = document.getElementById("historyContainer");
+            let button = document.querySelector(".history-toggle");
+            if (history.style.display === "block") {
+                history.style.display = "none";
+                button.textContent = "History";
+            } else {
+                history.style.display = "block";
+                button.textContent = "Close History";
+            }
+        }
+
+        async function fetchHistory() {
+    try {
+        let response = await fetch("http://127.0.0.1:5000/history");
+        let data = await response.json();
+        let historyList = document.getElementById("historyList");
+        historyList.innerHTML = "";
+
+        if (data.length === 0) {
+            historyList.innerHTML = "<li>No history available.</li>";
+            return;
+        }
+
+        data.forEach((item) => {
+            let li = document.createElement("li");
+            li.innerHTML = `
+                ${item.input}
+                <button class="delete-btn" onclick="deleteHistory(${item.id})">Delete</button>
+            `;
+            historyList.appendChild(li);
+        });
+    } catch (error) {
+        console.error("Error fetching history:", error);
+        alert("Failed to fetch history. Check if the backend is running.");
+    }
+}
+
+
+        async function deleteHistory(id) {
+            if (confirm("Are you sure you want to delete this history?")) {
+                let response = await fetch(`http://127.0.0.1:5000/history/${id}`, { method: "DELETE" });
+                if (response.ok) fetchHistory();
+            }
+        }
+        async function clearAllHistory() {
+            if (confirm("Are you sure you want to clear all history?")) {
+                let response = await fetch("http://127.0.0.1:5000/history", { method: "DELETE" });
+                if (response.ok) fetchHistory();
+            }
+        }
+
+        async function reuseQuery(query) {
+            document.getElementById("chatInput").value = query;
+        }
+    </script>
+   <style>
+    /* Global Styling */
+    body {
+            font-family: 'Poppins', Arial, sans-serif;
+            background: linear-gradient(135deg, #8e44ad, #3498db); /* Purple to Blue */
+            margin: 0;
+            padding: 30px;
+            color: #333;
+            height: 100vh;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: 10px solid #4a148c; /* Deep Purple Border */
+            border-radius: 5px;
+            box-shadow: 0px 0px 20px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+    h2 {
+        color: #ffffff;
+        font-size: 32px;
+        font-weight: 600;
+        margin-top: 20px;
+        letter-spacing: 0.5px;
+    }
+
+    /* Chat History Button */
+    .history-toggle {
+        position: fixed;
+        left: 20px;
+        top: 20px;
+        background: #6366f1;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 12px;
+        cursor: pointer;
+        border: none;
+        font-size: 16px;
+        font-weight: 600;
+        transition: background 0.3s ease;
+        box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+        z-index: 100;
+    }
+
+    .history-toggle:hover {
+        background: #4f46e5;
+    }
+
+    /* Chat History */
+    .history-container {
+        position: fixed;
+        left: 20px;
+        top: 60px;
+        width: 320px;
+        height: 80vh;
+        background-color: #1e293b;
+        color: white;
+        padding: 16px;
+        border-radius: 16px;
+        box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+        overflow-y: auto;
+        display: none;
+    }
+
+    #historyList li {
+        background: #334155;
+        margin-bottom: 8px;
+        padding: 12px;
+        border-radius: 8px;
+        font-size: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: background 0.2s ease;
+    }
+
+    #historyList li:hover {
+        background: #475569;
+    }
+
+    /* Delete Button */
+    .delete-btn {
+        background-color: #ef4444;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background 0.2s ease;
+    }
+
+    .delete-btn:hover {
+        background-color: #dc2626;
+    }
+
+    /* Response Container */
+    .response-container {
+        width: 80%;
+        max-width: 700px;
+        background-color: #c6f4fa;
+        padding: 14px;
+        border-radius: 10px;
+        box-shadow: 0px 4px 14px rgba(0, 0, 0, 0.1);
+        margin-bottom: 16px;
+        font-size: 16px;
+        color: #374151;
+        overflow-y: auto;
+        max-height: 450px; /* Limit height and allow scrolling if needed */
+    }
+
+    /* Chat Input Container (Pinned to Bottom) */
+    .input-container {
+        width: 80%;
+        max-width: 700px;
+        background-color: #ffffff;
+        padding: 14px;
+        border-radius: 24px;
+        box-shadow: 0px 4px 14px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 10;
+    }
+
+    #chatInput {
+        width: 100%;
+        padding: 14px;
+        border: none;
+        border-radius: 16px;
+        font-size: 16px;
+        outline: none;
+        background-color: #f3f4f6;
+        color: #333;
+        margin-right: 12px;
+    }
+    .search-button, .upload-button {
+        background-color: #63d2f1;
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 16px;
+        cursor: pointer;
+        transition: background 0.3s ease;
+        font-size: 16px;
+        margin-left: 8px;
+    }
+
+    .search-button:hover, .upload-button:hover {
+        background-color: #4f46e5;
+    }
+
+    .chat-button {
+        background-color: #63d2f1;
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 16px;
+        cursor: pointer;
+        transition: background 0.3s ease;
+        font-size: 16px;
+        margin-left:8px;
+    }
+
+    .chat-button:hover {
+        background-color: #4f46e5;
+    }
+</style>
+
+</head>
+<body onload="fetchHistory()">
+    <button class="history-toggle" onclick="toggleHistory()">History</button>
+    <div class="history-container" id="historyContainer">
+        <h2>Chat History</h2>
+        <ul id="historyList"></ul>
+    </div>
+    <h2>  🌏 AI Assistant</h2>
+    <div class="response-container">
+        <p id="chatResponse"></p>
+    </div>
+    <div class="input-container">
+        <input type="text" id="chatInput" placeholder="Ask something..." />
+        <button class="search-button">🔍</button>
+        <button class="upload-button">📤</button>
+        <button class="chat-button" onclick="chat()">➤</button>
+    </div>
+    
+</body>
+</html>
