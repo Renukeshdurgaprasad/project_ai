@@ -41,8 +41,8 @@
   - Type  **python** in cmd ,then paste the below code in that .
      ```sh
         python
-     
-    - ```sh
+-
+     ```sh
         from app import db, app
         with app.app_context():
         db.create_all()
@@ -62,8 +62,7 @@
   ```sh
      Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
 - now open the **html file (index.html)** in any browser
-- then you can see the interface as shown below , and you can chat with that Bot , it will gives response and stores the history of your chat.
-![Description](Screenshots/reference1.png)
+- then you can see the interface and you can chat with that Bot , it will gives response and stores the history of your chat.
 
  
 
