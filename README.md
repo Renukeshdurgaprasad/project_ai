@@ -52,7 +52,7 @@
   
 ### **step 4**
 -These step to intialize your **API_KEY ( gemini API KEY)** , execute the following by replacing **YOUR_API_KEY** with your key.
-    ```sh
+      ```sh
         set GEMINI_API_KEY = YOUR_API_KEY
 - **execute the python file**
 - execute the python file given with name **app.py**
