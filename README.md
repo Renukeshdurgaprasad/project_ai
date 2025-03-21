@@ -35,7 +35,7 @@
 - **2.2** create a python file with Name **app.py** ,update the code provided.
 ### **step3**
 - **3.1**create a html file with name **index.html**  , update the code provided.
--  **NOTE:** app.py and index.html should be created in the same file.
+    **NOTE:** app.py and index.html should be created in the same file.
 - then open the cmd in that directory.
 - **3.2 to intialize the database**
   - Type  **python** in cmd .
