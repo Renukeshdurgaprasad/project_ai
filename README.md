@@ -55,7 +55,6 @@
   ```sh
      set GEMINI_API_KEY = YOUR_API_KEY
 - **execute the python file**
-- execute the python file given with name **app.py**
    ```sh
      python app.py
 - If everything is set up correctly, you should see:
