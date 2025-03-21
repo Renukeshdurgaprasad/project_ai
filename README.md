@@ -38,10 +38,10 @@
 -  **NOTE:** app.py and index.html should be created in the same file.
 - then open the cmd in that directory.
 - **3.2 to intialize the database**
-  - Type  **python** in cmd ,then paste the below code in that .
+  - Type  **python** in cmd .
      ```sh
         python
--
+  - then paste the below code in the cmd
      ```sh
         from app import db, app
         with app.app_context():
