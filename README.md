@@ -46,14 +46,14 @@
         from app import db, app
         with app.app_context():
         db.create_all()
-  - then **exit** in the cmd.
+  - then write a command **exit** in the cmd.
      ```sh
       exit()
   
 ### **step 4**
 -in these step to intialize your **API_kEY ( gemini API KEY)** , execute the following by replacing **YOUR_API_KEY** with your key.
-    ```sh
-    set GEMINI_API_KEY = YOUR_API_KEY
+   ```sh
+     set GEMINI_API_KEY = YOUR_API_KEY
 - **execute the python file**
 - execute the python file given with name **app.py**
    ```sh
